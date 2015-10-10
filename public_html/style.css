@@ -1,3 +1,22 @@
 #something {
 	width: 300px;
 }
+
+#submit {
+	cursor:pointer;
+	text-align:center;
+	width: 19%;
+}
+
+#destination {
+	width: 80%;
+}
+
+input {
+	padding: 0;
+	margin: 0;
+}
+
+body {
+	margin: 0;
+}
