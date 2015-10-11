@@ -318,7 +318,7 @@ function drawMap() { //Map drawer from from HERE API
 
 function callServer(){
 	var i;
-	$("#probability").text("Low");
+	//$("#probability").text("Low");
 	$("#uber").slideToggle();
 	
 	$.post("http://crimerisk.azurewebsites.net/risk", JSON.stringify(routeXYZ), function(data) {

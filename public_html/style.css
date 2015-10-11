@@ -1,71 +1,89 @@
+.label-property{
+  color: rgb(168, 153, 26);
+}
+.label-personal{
+  color: rgb(175, 19, 20);
+}
+.inputBar {
+  height: 40px;
+  position: absolute;
+  z-index: 10;
+  width: 100%;
+}
 #submit {
-	cursor: pointer;
-	text-align: center;
-	width: 19%;
+  cursor: pointer;
+  text-align: center;
+  width: 20%;
+  margin: 0;
+  border: none;
+  height: 100%;
+  font-size: 130%;
+  background-color: rgba(255,255,255,0.8);
+  padding: 0;
+  position: absolute;
 }
 #destination {
-	width: 80%;
+  font-size: 130%;
+  width: 80%;
+  padding: 20px;
+  height: 100%;
+  margin: 0;
+  border: none;
+  color: #f6f6f6;
+  background-color: rgba(0,0,0,0.8);
 }
-/*#switchMode {
-	cursor: pointer;
-	text-align: center;
-	width: 12%;
-}*/
 #map {
-	z-index: 0;
+  z-index: 0;
 }
 #uber {
-	position: fixed;
-	bottom: 0;
-	z-index: 1;
-	width: 100%;
-	height: 17%;
-	display: none;
-	opacity: 0.8;
-	border: 3;
+  position: fixed;
+  bottom: 0;
+  z-index: 1;
+  width: 100%;
+  height: 180px;
+  display: none;
+  opacity: 0.8;
 }
-#left, #right {
-	position: absolute;
-	width: 50%;
-	height: 100%;
-	text-align: center;
-	border: 1;
-	border-color: #f4f4f4;
+.left, .right {
+  position: absolute;
+  width: 50%;
+  height: 100%;
+  border: none;
 }
-#crimeScore {
-	text-align: center;
-	height: 100%;
+.left {
+  left: 0;
+  padding: 20px;
 }
-#call, #probability {
-	height: 100%;
-	width: 100%;
-	text-align: center;
+.right {
+  cursor: pointer;
+  padding: 50px;
+  margin: 0;
+  border: none;
+  right: 0;
+  color: #f6f6f6;
+  background-color: rgba(0,0,0,0.8);
 }
-#call {
-	cursor: pointer;
+.right .text{
+  margin-top: 20px;
 }
-#left {
-	left: 0;
-}
-#right {
-	right: 0;
+.text h1{
+  margin: 0;
 }
 input {
-	padding: 0;
-	margin: 0;
-	border: 1;
+  padding: 0;
+  margin: 0;
 }
 body {
-	margin: 0;
+  margin: 0;
 }
 .directions li span.arrow {
-	  display:inline-block;
-	  min-width:28px;
-	  min-height:28px;
-	  background-position:0px;
-	  background-image: url("../img/arrows.png");
-	  position:relative;
-	  top:8px;
+  display:inline-block;
+  min-width:28px;
+  min-height:28px;
+  background-position:0px;
+  background-image: url("../img/arrows.png");
+  position:relative;
+  top:8px;
 }
 .directions li span.depart  {
   background-position:-28px;
