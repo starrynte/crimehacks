@@ -8,8 +8,155 @@ var defaultLayers;
 var map;
 var behavior;
 var ui;	
-var bubble;
 var locationsContainer;
+var routeInstructionsContainer;
+var route;
+var counter = 1;
+var total_time;
+var total_distance;
+var startTime;
+var endTime;
+var serverData;
+var routeXYZ = [];
+var crimeDistribution;
+
+/**
+ * Calculates and displays a walking route from the St Paul's Cathedral in London
+ * to the Tate Modern on the south bank of the River Thames
+ *
+ * A full list of available request parameters can be found in the Routing API documentation.
+ * see:  http://developer.here.com/rest-apis/documentation/routing/topics/resource-calculate-route.html
+ *
+ * @param   {H.service.Platform} platform    A stub class to access HERE services
+ */
+function calculateRouteFromAtoB (platform) {
+  var router = platform.getRoutingService(),
+    routeRequestParams = {
+      mode: 'shortest;pedestrian',
+      representation: 'display',
+      waypoint0: latitude + "," + longitude, // currentLocation
+      waypoint1: destLat + "," + destLong,  // Destination
+      routeattributes: 'waypoints,summary,shape,legs',
+      maneuverattributes: 'direction,action'
+    };
+
+
+  router.calculateRoute(
+    routeRequestParams,
+    onSuccessCalculate,
+    onError
+  );
+}
+
+/**
+ * This function will be called once the Routing REST API provides a response
+ * @param  {Object} result          A JSONP object representing the calculated route
+ *
+ * see: http://developer.here.com/rest-apis/documentation/routing/topics/resource-type-calculate-route.html
+ */
+function onSuccessCalculate(result) {
+  if (!result.response || !result.response.route || result.response.route.length == 0) {
+	  $("#errorMessage").html("This location is not accessible by foot from your location.");
+	  $("#errorMessage").modal("toggle");
+	  reset();
+	  return;
+  }
+  var route = result.response.route[0];
+ /*
+  * The styling of the route response on the map is entirely under the developer's control.
+  * A representitive styling can be found the full JS + HTML code of this example
+  * in the functions below:
+  */
+  addRouteShapeToMap(route);
+  addManueversToMap(route); //This function calls function that requests from server
+  // ... etc.
+}
+
+/**
+ * Creates a H.map.Polyline from the shape of the route and adds it to the map.
+ * @param {Object} route A route as received from the H.service.RoutingService
+ */
+function addRouteShapeToMap(route){
+  var strip = new H.geo.Strip(),
+    routeShape = route.shape,
+    polyline;
+
+  routeShape.forEach(function(point) {
+    var parts = point.split(',');
+    strip.pushLatLngAlt(parts[0], parts[1]);
+  });
+
+  polyline = new H.map.Polyline(strip, {
+    style: {
+      lineWidth: 4,
+      strokeColor: 'rgba(0, 128, 255, 0.7)'
+    }
+  });
+  // Add the polyline to the map
+  map.addObject(polyline);
+  // And zoom to its bounding rectangle
+  map.setViewBounds(polyline.getBounds(), true);
+}
+
+
+/**
+ * Creates a series of H.map.Marker points from the route and adds them to the map.
+ * @param {Object} route  A route as received from the H.service.RoutingService
+ */
+function addManueversToMap(route){
+  var svgMarkup = '<svg width="18" height="18" ' +
+    'xmlns="http://www.w3.org/2000/svg">' +
+    '<circle cx="8" cy="8" r="8" ' +
+      'fill="#1b468d" stroke="white" stroke-width="1"  />' +
+    '</svg>',
+    dotIcon = new H.map.Icon(svgMarkup, {anchor: {x:8, y:8}}),
+    group = new  H.map.Group(),
+    i,
+    j;
+	
+  var d = new Date();
+  var offset = d.getTimezoneOffset() * 60;
+  var currentTime = (d.getTime()/ 1000.0 - offset) % 86400;
+  console.log("Current Time: " + currentTime);
+  // Add a marker for each maneuver
+  for (i = 0;  i < route.leg.length; i += 1) {
+    for (j = 0;  j < route.leg[i].maneuver.length; j += 1) {
+      // Get the next maneuver.
+      maneuver = route.leg[i].maneuver[j];
+	  var tempObj = {lat: maneuver.position.latitude,
+		lng: maneuver.position.longitude,
+		time: currentTime + maneuver.travelTime
+	  };
+	  currentTime += maneuver.travelTime;
+      // Add a marker to the maneuvers group
+      var marker =  new H.map.Marker({
+        lat: maneuver.position.latitude,
+        lng: maneuver.position.longitude} ,
+        {icon: dotIcon});
+      marker.instruction = maneuver.instruction;
+      group.addObject(marker);
+	  routeXYZ[j] = tempObj;
+    }
+  }
+  for (i = 0; i < routeXYZ.length; i++) {
+	  console.log(routeXYZ[i]);
+  }
+  // Add the maneuvers group to the map
+  total_time = route.summary.travelTime;
+  startTime = (d.getTime() / 1000.0 - offset) % 86400; 
+  endTime = (d.getTime() / 1000.0 - offset + total_time) % 86400; 
+  total_distance = route.summary.distance / 1000.0;
+  console.log("Distance: " + total_distance);
+  console.log("Time: " + total_time);
+  map.addObject(group);
+  callServer();
+}
+
+Number.prototype.toMMSS = function () {
+  return  Math.floor(this / 60)  +' minutes '+ (this % 60)  + ' seconds.';
+}
+
+/*Code below used to draw map and add markers*/
 
 function addLocationsToMap(locations){
   var group = new  H.map.Group(),
@@ -28,7 +175,7 @@ function addLocationsToMap(locations){
 	// Add the locations group to the map
 	map.addObject(destLocation);
 	map.setCenter({lat:destLat, lng:destLong});
-	addLocationDestination();
+	calculateRouteFromAtoB(platform);
 }
 
 /**
@@ -55,29 +202,14 @@ function geocode(platform) {
 }
 
 /**
- * Opens/Closes a infobubble
- * @param  {H.geo.Point} position     The location on the map.
- * @param  {String} text              The contents of the infobubble.
- */
-function openBubble(position, text){
- if(!bubble){
-    bubble =  new H.ui.InfoBubble(
-      position,
-      {content: text});
-    ui.addBubble(bubble);
-  } else {
-    bubble.setPosition(position);
-    bubble.setContent(text);
-    bubble.open();
-  }
-}
-
-/**
  * This function will be called if a communication error occurs during the JSON-P request
  * @param  {Object} error  The error message received.
  */
 function onError(error) {
-  alert('Ooops!');
+  $("#errorMessage").html('Ooops!');
+  $("#errorMessage").modal("toggle");
+  reset();
+  return;
 }
 
 /**
@@ -87,8 +219,10 @@ function onError(error) {
  * see: http://developer.here.com/rest-apis/documentation/geocoder/topics/resource-type-response-geocode.html
  */
 function onSuccess(result) {
-  if (result.response.view.length == 0) {
-	  alert("Invalid Location");
+  if (!result.response || !result.response.view || result.response.view.length == 0) {
+	  $("#errorMessage").html("Invalid Location");
+	  $("#errorMessage").modal("toggle");
+	  reset();
 	  return;
   }
   var locations = result.response.view[0].result;
@@ -111,23 +245,32 @@ function addLocationDestination() {
 function savePosition(position) {
 	latitude = position.coords.latitude;
 	longitude = position.coords.longitude;
+	console.log("Latitude: " + latitude + "Longitude: " + longitude);
 	drawMap();
-	geocode(platform);	
+	addLocationDestination();
 }
 
 function error(err) {
   switch(error.code) {
         case error.PERMISSION_DENIED:
-            alert("User denied the request for Geolocation.");
+            $("#errorMessage").html("User denied the request for Geolocation.");
+			$("#errorMessage").modal("toggle");
+			reset();
             break;
         case error.POSITION_UNAVAILABLE:
-            alert("Location information is unavailable.");
+            $("#errorMessage").html("Location information is unavailable.");
+			$("#errorMessage").modal("toggle");
+			reset();
             break;
         case error.TIMEOUT:
-            alert("The request to get user location timed out.");
+            $("#errorMessage").html("The request to get user location timed out.");
+			$("#errorMessage").modal("toggle");
+			reset();
             break;
         case error.UNKNOWN_ERROR:
-            alert("An unknown error occurred.");
+            $("#errorMessage").html("An unknown error occurred.");
+			$("#errorMessage").modal("toggle");
+			reset();
             break;
     }
 };
@@ -136,7 +279,10 @@ function getLocation() {
 	if (navigator.geolocation) {
 		navigator.geolocation.getCurrentPosition(savePosition, error);
 	} else {
-		alert("Geolocation is not supported by this browser.");
+		$("#errorMessage").html("Geolocation is not supported by this browser.");
+		$("#errorMessage").modal("toggle");
+		reset();
+		return;
 	}
 }
 
@@ -161,19 +307,65 @@ function drawMap() { //Map drawer from from HERE API
 
 	// Create the default UI components
 	ui = H.ui.UI.createDefault(map, defaultLayers);
-	
-	bubble;
+
 	// Now use the map as required...
 	map.setCenter({lat:latitude, lng:longitude});
 	map.setZoom(14);
 }
 
+function callServer(){
+	var i;
+	$.post("<URLHERE>", routeXYZ, function() {
+		//save stuff here	
+		drawCrimeLayer();
+	});	
+	for(i = 0; i < crimeDistribution.length; i++) {
+		addCircleToMap(map, crimeDistribution[i].lat, crimeDistribution[i].lng);
+	}
+	$("#uber").slideToggle();
+}
+
+function addCircleToMap(map, latitude, longitude){
+	map.addObject(new H.map.Circle(
+    {lat: latitude, lng: longitue},
+    80,
+    {
+      style: {
+        strokeColor: 'rgba(55, 0, 0, 0.6)', // Color of the perimeter
+        lineWidth: 2,
+        fillColor: 'rgba(60, 0, 0, 0.5)'  // Color of the circle
+      }
+    }
+  ));
+}
+
+function reset() {
+	var longitude = 0;
+	var latitude = 0;
+	var userDest = 0;
+	var destLat = 0;
+	var destLong = 0;
+	var platform = 0;
+	var defaultLayers = 0;
+	var map = 0;
+	var behavior = 0;
+	var ui = 0;	
+	var locationsContainer = 0;
+	var routeInstructionsContainer = 0;
+	var route = 0;
+}
+
 $(document).ready(function() {
 	console.log("The document loaded.");
+	getLocation();
+	$("#destination").keyup(function(event){
+    if(event.keyCode == 13){
+        $("#submit").click();
+    }});
 	$("#submit").click(function() {
 		console.log("clicked button");
-		userDest = $("#destination").value;
+		userDest = destination.value;
 		console.log($("#destination"));
-		getLocation();
-	});	
+		geocode(platform);
+	});
 });

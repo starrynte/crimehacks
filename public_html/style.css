@@ -1,7 +1,3 @@
-#something {
-	width: 300px;
-}
-
 #submit {
 	cursor:pointer;
 	text-align:center;
@@ -10,6 +6,19 @@
 
 #destination {
 	width: 80%;
+}
+
+#map {
+	z-index: 0;
+}
+
+#uber {
+	position: fixed;
+	bottom: 0;
+	z-index: 1;
+	width: 100%;
+	height: 34%;
+	display: none;
 }
 
 input {
