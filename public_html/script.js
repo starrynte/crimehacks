@@ -3,6 +3,7 @@ var latitude;
 var userDest;
 var destLat;
 var destLong;
+var destLocation;
 var platform;
 var defaultLayers;
 var map;
@@ -11,7 +12,6 @@ var ui;
 var locationsContainer;
 var routeInstructionsContainer;
 var route;
-var counter = 1;
 var total_time;
 var total_distance;
 var startTime;
@@ -19,11 +19,10 @@ var endTime;
 var serverData;
 var routeXYZ = [];
 var crimeDistribution;
+var polyline;
+var group;
 
 /**
- * Calculates and displays a walking route from the St Paul's Cathedral in London
- * to the Tate Modern on the south bank of the River Thames
- *
  * A full list of available request parameters can be found in the Routing API documentation.
  * see:  http://developer.here.com/rest-apis/documentation/routing/topics/resource-calculate-route.html
  *
@@ -57,8 +56,7 @@ function calculateRouteFromAtoB (platform) {
 function onSuccessCalculate(result) {
   if (!result.response || !result.response.route || result.response.route.length == 0) {
 	  $("#errorMessage").html("This location is not accessible by foot from your location.");
-	  $("#errorMessage").modal("toggle");
-	  reset();
+	  $("#errorModal").modal("toggle");
 	  return;
   }
   var route = result.response.route[0];
@@ -78,20 +76,24 @@ function onSuccessCalculate(result) {
  */
 function addRouteShapeToMap(route){
   var strip = new H.geo.Strip(),
-    routeShape = route.shape,
-    polyline;
+    routeShape = route.shape;
 
   routeShape.forEach(function(point) {
     var parts = point.split(',');
     strip.pushLatLngAlt(parts[0], parts[1]);
   });
 
+	if (polyline)
+	{
+		map.removeObject(polyline);
+	}
   polyline = new H.map.Polyline(strip, {
     style: {
       lineWidth: 4,
       strokeColor: 'rgba(0, 128, 255, 0.7)'
     }
   });
+  
   // Add the polyline to the map
   map.addObject(polyline);
   // And zoom to its bounding rectangle
@@ -110,9 +112,14 @@ function addManueversToMap(route){
       'fill="#1b468d" stroke="white" stroke-width="1"  />' +
     '</svg>',
     dotIcon = new H.map.Icon(svgMarkup, {anchor: {x:8, y:8}}),
-    group = new  H.map.Group(),
     i,
     j;
+	
+	if (group)
+	{
+		map.removeObject(group);
+	}
+    group = new H.map.Group();
 	
   var d = new Date();
   var offset = d.getTimezoneOffset() * 60;
@@ -145,7 +152,7 @@ function addManueversToMap(route){
   total_time = route.summary.travelTime;
   startTime = (d.getTime() / 1000.0 - offset) % 86400; 
   endTime = (d.getTime() / 1000.0 - offset + total_time) % 86400; 
-  total_distance = route.summary.distance / 1000.0;
+  total_distance = route.summary.distance / 1609.34;
   console.log("Distance: " + total_distance);
   console.log("Time: " + total_time);
   map.addObject(group);
@@ -171,7 +178,10 @@ function addLocationsToMap(locations){
 	destLong = locations[0].location.displayPosition.longitude;
 	console.log(destLat);
 	console.log(destLong);
-    var destLocation = new H.map.Marker(position);
+	if (destLocation) {
+		map.removeObject(destLocation);
+	}
+	destLocation = new H.map.Marker(position);
 	// Add the locations group to the map
 	map.addObject(destLocation);
 	map.setCenter({lat:destLat, lng:destLong});
@@ -207,8 +217,7 @@ function geocode(platform) {
  */
 function onError(error) {
   $("#errorMessage").html('Ooops!');
-  $("#errorMessage").modal("toggle");
-  reset();
+  $("#errorModal").modal("toggle");
   return;
 }
 
@@ -221,8 +230,7 @@ function onError(error) {
 function onSuccess(result) {
   if (!result.response || !result.response.view || result.response.view.length == 0) {
 	  $("#errorMessage").html("Invalid Location");
-	  $("#errorMessage").modal("toggle");
-	  reset();
+	  $("#errorModal").modal("toggle");
 	  return;
   }
   var locations = result.response.view[0].result;
@@ -254,23 +262,19 @@ function error(err) {
   switch(error.code) {
         case error.PERMISSION_DENIED:
             $("#errorMessage").html("User denied the request for Geolocation.");
-			$("#errorMessage").modal("toggle");
-			reset();
+			$("#errorModal").modal("toggle");
             break;
         case error.POSITION_UNAVAILABLE:
             $("#errorMessage").html("Location information is unavailable.");
-			$("#errorMessage").modal("toggle");
-			reset();
+			$("#errorModal").modal("toggle");
             break;
         case error.TIMEOUT:
             $("#errorMessage").html("The request to get user location timed out.");
-			$("#errorMessage").modal("toggle");
-			reset();
+			$("#errorModal").modal("toggle");
             break;
         case error.UNKNOWN_ERROR:
             $("#errorMessage").html("An unknown error occurred.");
-			$("#errorMessage").modal("toggle");
-			reset();
+			$("#errorModal").modal("toggle");
             break;
     }
 };
@@ -280,8 +284,7 @@ function getLocation() {
 		navigator.geolocation.getCurrentPosition(savePosition, error);
 	} else {
 		$("#errorMessage").html("Geolocation is not supported by this browser.");
-		$("#errorMessage").modal("toggle");
-		reset();
+		$("#errorModal").modal("toggle");
 		return;
 	}
 }
@@ -315,6 +318,7 @@ function drawMap() { //Map drawer from from HERE API
 
 function callServer(){
 	var i;
+	$("#uber").slideToggle();
 	$.post("<URLHERE>", routeXYZ, function() {
 		//save stuff here	
 		drawCrimeLayer();
@@ -322,12 +326,11 @@ function callServer(){
 	for(i = 0; i < crimeDistribution.length; i++) {
 		addCircleToMap(map, crimeDistribution[i].lat, crimeDistribution[i].lng);
 	}
-	$("#uber").slideToggle();
 }
 
 function addCircleToMap(map, latitude, longitude){
 	map.addObject(new H.map.Circle(
-    {lat: latitude, lng: longitue},
+    {lat: latitude, lng: longitude},
     80,
     {
       style: {
@@ -339,29 +342,14 @@ function addCircleToMap(map, latitude, longitude){
   ));
 }
 
-function reset() {
-	var longitude = 0;
-	var latitude = 0;
-	var userDest = 0;
-	var destLat = 0;
-	var destLong = 0;
-	var platform = 0;
-	var defaultLayers = 0;
-	var map = 0;
-	var behavior = 0;
-	var ui = 0;	
-	var locationsContainer = 0;
-	var routeInstructionsContainer = 0;
-	var route = 0;
-}
-
 $(document).ready(function() {
 	console.log("The document loaded.");
 	getLocation();
 	$("#destination").keyup(function(event){
-    if(event.keyCode == 13){
-        $("#submit").click();
-    }});
+		if(event.keyCode == 13){
+			$("#submit").click();
+		}
+	});
 	$("#submit").click(function() {
 		console.log("clicked button");
 		userDest = destination.value;
