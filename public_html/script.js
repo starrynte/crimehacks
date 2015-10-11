@@ -310,7 +310,7 @@ function drawMap() { //Map drawer from from HERE API
 function updateStats(){
 	$("#count-property").html(count_property);
 	$("#count-personal").html(count_personal);
-	var risk = Math.round(riskProbability * 1000000) / 1000000;
+	var risk = Math.round(riskProbability * 100000) / 100000;
 	$("#risk-probability").html(risk);
 	if (risk > 0.03) {
 		$("#uber-pre").html("Seems real sketch...should really");

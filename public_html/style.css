@@ -40,7 +40,7 @@
   bottom: 0;
   z-index: 1;
   width: 100%;
-  height: 180px;
+  height: 190px;
   display: none;
   opacity: 0.8;
 }
@@ -56,7 +56,7 @@
 }
 .right {
   cursor: pointer;
-  padding: 50px;
+  padding: 40px;
   margin: 0;
   border: none;
   right: 0;
@@ -69,6 +69,19 @@
 .text h1{
   margin: 0;
 }
+@media (max-width: 768px) {
+  .left h4{
+    margin: 1px;
+    font-size: 1.7rem;
+  }
+  #uber {
+    height: 220px;
+  }
+  .right .text{
+    margin-top: 20px;
+  }
+}
+
 input {
   padding: 0;
   margin: 0;
