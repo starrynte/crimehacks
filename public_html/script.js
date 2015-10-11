@@ -257,22 +257,18 @@ function error(err) {
         case error.PERMISSION_DENIED:
             $("#errorMessage").html("User denied the request for Geolocation.");
 			$("#errorModal").modal("toggle");
-			$("#loader-container").hide();
             break;
         case error.POSITION_UNAVAILABLE:
             $("#errorMessage").html("Location information is unavailable.");
 			$("#errorModal").modal("toggle");
-			$("#loader-container").hide();
             break;
         case error.TIMEOUT:
             $("#errorMessage").html("The request to get user location timed out.");
 			$("#errorModal").modal("toggle");
-			$("#loader-container").hide();
             break;
         case error.UNKNOWN_ERROR:
             $("#errorMessage").html("An unknown error occurred.");
 			$("#errorModal").modal("toggle");
-			$("#loader-container").hide();
             break;
     }
 };
