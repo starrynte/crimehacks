@@ -17,10 +17,11 @@ var total_distance;
 var startTime;
 var endTime;
 var riskProbability;
-var routeXYZ = [];
+var routeXYZ;
 var crimeDistribution;
 var polyline;
 var group;
+var allCircles = [];
 
 /**
  * A full list of available request parameters can be found in the Routing API documentation.
@@ -120,6 +121,7 @@ function addManueversToMap(route){
 		map.removeObject(group);
 	}
     group = new H.map.Group();
+	routeXYZ = [];
 	
   var d = new Date();
   var offset = d.getTimezoneOffset() * 60;
@@ -144,9 +146,6 @@ function addManueversToMap(route){
       group.addObject(marker);
 	  routeXYZ[j] = tempObj;
     }
-  }
-  for (i = 0; i < routeXYZ.length; i++) {
-	  console.log(routeXYZ[i]);
   }
   // Add the maneuvers group to the map
   total_time = route.summary.travelTime;
@@ -176,8 +175,6 @@ function addLocationsToMap(locations){
     };
 	destLat = locations[0].location.displayPosition.latitude;
 	destLong = locations[0].location.displayPosition.longitude;
-	console.log(destLat);
-	console.log(destLong);
 	if (destLocation) {
 		map.removeObject(destLocation);
 	}
@@ -244,8 +241,6 @@ function onSuccess(result) {
 }
 
 function addLocationDestination() {
-	console.log(latitude);
-	console.log(longitude);
 	var currentLocation = new H.map.Marker({lat:latitude, lng:longitude});
 	map.addObject(currentLocation);
 }
@@ -253,7 +248,6 @@ function addLocationDestination() {
 function savePosition(position) {
 	latitude = position.coords.latitude;
 	longitude = position.coords.longitude;
-	console.log("Latitude: " + latitude + "Longitude: " + longitude);
 	drawMap();
 	addLocationDestination();
 }
@@ -319,53 +313,64 @@ function drawMap() { //Map drawer from from HERE API
 function callServer(){
 	var i;
 	//$("#probability").text("Low");
-	$("#uber").slideToggle();
-	
+	if ($("#uber").css("display") == "none") {
+		$("#uber").slideToggle();
+	}
+	map.removeObjects(allCircles);
+	allCircles = [];
+
 	$.post("http://crimerisk.azurewebsites.net/risk", JSON.stringify(routeXYZ), function(data) {
 		console.log(data);
 		crimeDistribution = data.crimes;
 		riskProbability = data.risk;
 		for(i = 0; i < crimeDistribution.length; i++) {
-		if (crimeDistribution[i].Category == 'Property') {
-			addCircleToMap(map, crimeDistribution[i].Latitude, crimeDistribution[i].Longitude, 'yellow');
+			if (crimeDistribution[i].Category == 'Property') {
+				addCircleToMap(map, crimeDistribution[i].Latitude, crimeDistribution[i].Longitude, 'yellow');
+			} else if (crimeDistribution[i].Category == 'Person') {
+				addCircleToMap(map, crimeDistribution[i].Latitude, crimeDistribution[i].Longitude, 'red');
+			}
 		}
-		if (crimeDistribution[i].Category == 'Person') {
-			addCircleToMap(map, crimeDistribution[i].Latitude, crimeDistribution[i].Longitude, 'red');
-		}
-	}
+		console.log("ic " + map.getObjects().length);
 	});
 }
 
-function addCircleToMap(map, latitude, longitude, color){
+function addCircleToMap(map, clatitude, clongitude, color){
+	var style;
 	if (color == 'yellow') {
-		map.addObject(new H.map.Circle(
-		{lat: latitude, lng: longitude},
-			80,
-			{
-			  style: {
-				strokeColor: 'rgba(255, 240, 31, 0.6)', // Color of the perimeter
-				lineWidth: 1,
-				fillColor: 'rgba(255, 240, 31, 0.5)'  // Color of the circle
-			  }
-			}
-		));
+		style = {
+			strokeColor: 'rgba(255, 240, 31, 0.6)', // Color of the perimeter
+			lineWidth: 1,
+			fillColor: 'rgba(255, 240, 31, 0.5)'  // Color of the circle
+		};
 	} else {
-		map.addObject(new H.map.Circle(
-		{lat: latitude, lng: longitude},
-			80,
-			{
-			  style: {
-				strokeColor: 'rgba(255, 30, 30, 0.6)', // Color of the perimeter
-				lineWidth: 1,
-				fillColor: 'rgba(255, 30, 30, 0.5)'  // Color of the circle
-			  }
-			}
-		));
+		style = {
+			strokeColor: 'rgba(255, 30, 30, 0.6)', // Color of the perimeter
+			lineWidth: 1,
+			fillColor: 'rgba(255, 30, 30, 0.5)'  // Color of the circle
+		}
 	}
+	
+	prevmap = new H.map.Circle(
+	{lat: clatitude, lng: clongitude},
+		80,
+		{
+		  "style": style
+		}
+	);
+	allCircles.push(prevmap);
+	map.addObject(prevmap);
+}
+
+function callUber() {
+	var dataObj = {userLat: latitude, userLong: longitude, destinationLat: destLat, destinationLong: destLong}
+	$.post("http://crimehacks.azurewebsites.net/uber", dataObj, function() {
+		console.log("success");
+	}).fail(function() {
+		console.log("jackson pls");
+	});
 }
 
 $(document).ready(function() {
-	console.log("The document loaded.");
 	getLocation();
 	$("#destination").keyup(function(event){
 		if(event.keyCode == 13){
@@ -373,14 +378,10 @@ $(document).ready(function() {
 		}
 	});
 	$("#submit").click(function() {
-		console.log("clicked button");
 		userDest = destination.value;
-		console.log($("#destination"));
 		geocode(platform);
 	});
-	/*$("#switchMode").click(function() {
-		console.log("switching modes...");
-		$("#formPopup").popup("open");
-		
-	});*/
+	$("#call").click(function() {
+		callUber();
+	})
 });
