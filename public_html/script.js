@@ -338,9 +338,6 @@ function callServer(){
 
 function addCircleToMap(map, latitude, longitude, color){
 	if (color == 'yellow') {
-		if (map) {
-			
-		}
 		map.addObject(new H.map.Circle(
 		{lat: latitude, lng: longitude},
 			80,
