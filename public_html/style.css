@@ -80,6 +80,9 @@
   .right .text{
     margin-top: 20px;
   }
+  .right h1{
+    font-size: 33px;
+  }
 }
 
 input {
