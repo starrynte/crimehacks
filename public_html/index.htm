@@ -1,18 +1,109 @@
 <html>
 
 <head>
-<title>Please find a better title for this zzz</title>
-<link rel="stylesheet" href="style.css">
+	<title>CrimeHacks</title>
+	<meta name="viewport" content="initial-scale=1.0, width=device-width" />
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" type="text/css"
+		  href="https://js.api.here.com/v3/3.0/mapsjs-ui.css" />
+	<style type="text/css">
+	</style>
 </head>
-
 <body>
-<h1>Hello!</h1>
-<div id="something">
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut at nulla eget felis iaculis facilisis in sit amet dui. Donec vel porttitor mi, et tristique metus. Curabitur maximus augue eget magna viverra consectetur. Nam quis sem non purus aliquet ullamcorper. Proin suscipit sit amet ante ut congue. Morbi ac orci vestibulum, mattis dolor nec, sagittis tortor. Donec ut aliquam arcu, vitae congue augue. Mauris vitae sapien quis mauris tristique rutrum et quis turpis. Donec vulputate porta erat a aliquet. Cras a cursus sapien. Vestibulum tristique ut libero sed pretium. Aliquam vel tempor nunc.
-
-Mauris a metus laoreet, dapibus tortor vel, ultrices metus. Suspendisse eu lorem ac nunc pellentesque consequat. Praesent quis quam justo. Aliquam sapien elit, blandit et porta in, convallis vitae nisi. Quisque finibus vel neque non luctus. Fusce rhoncus, eros eu faucibus laoreet, nisi ligula luctus odio, sit amet convallis libero eros vel dolor. Ut finibus fringilla varius. Proin tristique eros blandit, pharetra lectus vitae, placerat lectus. Aenean congue tellus nec lacus molestie venenatis. Cras accumsan imperdiet elit, vitae vehicula tortor convallis sit amet. Sed volutpat gravida diam sed feugiat. Cras lacinia sodales dolor, ac vulputate quam imperdiet ut. Curabitur at quam quis libero fermentum iaculis in in quam. Praesent condimentum enim metus, eget porttitor purus sodales eget. Morbi nec sem finibus sapien vestibulum sagittis. Praesent ut eros in nulla viverra varius.
+<div id="loader-container">
+	<div id="loader">
+		<ul>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+		</ul>
+	</div>
 </div>
+<div class = "inputBar">
+	<input id = "destination" type="text" name="Destination" title ="Enter Destination"
+		   placeholder ="Enter Destination"/>
+	<button id = "submit" value="Submit">Check</button>
+</div>
+<div id = "input"></div>
+<div id="map" style="width: 100%; height: 100%; background: lightblue"></div>
+
+<div id="uber" style="background: white">
+	<div class="left">
+		<div class="left-title">
+			<div>
+				<span>Walking time and distance: </span>
+				<span id="total_time" class="DNC" dir="down" most="70" format="number"></span> <span>mins</span>
+				<span id="total_distance" class="DNC" dir="down" most="4" format="number"></span> <span>miles</span>
+			</div>
+			<span>Past Crime Statistics on this Path over 4 Months:</span>
+		</div>
+		<div class="row">
+			<div class="col-xs-10 col-md-6">
+				<h4 class="label-property">Larceny, Burglary, Robbery:</h4>
+			</div>
+			<div class="col-xs-2 col-md-6">
+				<h4 id="count-property" class="DNC" format="number" dir="down" most="60" least="0">12</h4>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-10 col-md-6">
+				<h4 class="label-personal">Assault, Kidnapping:</h4>
+			</div>
+			<div class="col-xs-2 col-md-6">
+				<h4 id="count-personal" class="DNC" format="number" dir="down" most="30" least="0">23</h4>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-10 col-md-6">
+				<h4>Overall Risk Factor (0~1):</h4>
+			</div>
+			<div class="col-xs-2 col-md-6">
+				<h4 id="risk-probability" class="DNC" format="decimal" dir="down" most="0.03" least="0">0.003</h4>
+			</div>
+		</div>
+	</div>
+	<div id = "call" class="right col-xs-5">
+		<div class="text">
+			<span id="uber-pre">Seems Sketch...</span>
+			<h1	>Call an Uber?</h1>
+		</div>
+	</div>
+</div>
+<div id="errorModal" class="modal fade" role="dialog">
+	<div class="modal-dialog">
+		<!-- Modal content-->
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">Error</h4>
+			</div>
+			<div class="modal-body">
+				<p id = "errorMessage"></p>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+
+	</div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript" charset="UTF-8"
+		src="https://js.api.here.com/v3/3.0/mapsjs-core.js"></script>
+<script type="text/javascript" charset="UTF-8"
+		src="https://js.api.here.com/v3/3.0/mapsjs-service.js"></script>
+<script type="text/javascript" charset="UTF-8"
+		src="https://js.api.here.com/v3/3.0/mapsjs-ui.js"></script>
+<script type="text/javascript" charset="UTF-8"
+		src="https://js.api.here.com/v3/3.0/mapsjs-mapevents.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<!-- hello jackson -->
+<script src="dynamic-number-coloring.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
