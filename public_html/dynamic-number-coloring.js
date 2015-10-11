@@ -1,38 +1,37 @@
-$(document).ready(function() {
+var settings = {
+	percent : {
+		ceiling : 95,
+		floor : 5,
+	},
+	decimal : {
+		ceiling : 1.0,
+		floor : 0.0,
+	},
+	number : {
+		ceiling : 100,
+		floor : 0
+	},
+	sat : "100%",
+	light : "40%",
+	hue_top : 130,
+	format : "percent",
+	dir : "top"
+};
 
-	var settings = {
-		percent : {
-			ceiling : 95,
-			floor : 5,			
-		},
-		decimal : {
-			ceiling : 1.0,
-			floor : 0.0,			
-		},
-		number : {
-			ceiling : 100,
-			floor : 0
-		},
-		sat : "100%",
-		light : "40%",
-		hue_top : 130,
-		format : "percent",
-		dir : "top"
-	};
+var normalize = function(num) {
+	if (num > 1)
+		return 1;
+	if (num < 0)
+		return 0;
+	return num;
+};
 
-	var normalize = function(num) {
-		if (num > 1)
-			return 1;
-		if (num < 0)
-			return 0;
-		return num;
-	};
+var constructHsl = function(percent) {
+	var hsl = "hsl(" + percent * settings.hue_top + ", " + settings.sat + ", " + settings.light + ")";
+	return hsl;
+};
 
-	var constructHsl = function(percent) {
-		var hsl = "hsl(" + percent * settings.hue_top + ", " + settings.sat + ", " + settings.light + ")";
-		return hsl;
-	};
-
+function DNC(){
 	$('.DNC').each(function(){
 		var content = $(this).html();
 		var format = $(this).attr("format");
@@ -51,20 +50,19 @@ $(document).ready(function() {
 		if (!least)
 			least = settings[format].floor;
 
-    	if (format == "percent") 
-    		content = content.substring(0, content.length - 1);
+		if (format == "percent")
+			content = content.substring(0, content.length - 1);
 
-    	var num = parseFloat(content);
-    	var range = most - least;
-    	if (range > 0) {
-    		var percent = (num - least) / range;
-    		percent = normalize(percent);
+		var num = parseFloat(content);
+		var range = most - least;
+		if (range > 0) {
+			var percent = (num - least) / range;
+			percent = normalize(percent);
 
-    		if (dir == "down")
-    			percent = 1 - percent;
+			if (dir == "down")
+				percent = 1 - percent;
 
-    		var hsl = constructHsl(percent);
-    		$(this).css("color", hsl);
-    	}
-	});
-});
+			var hsl = constructHsl(percent);
+			$(this).css("color", hsl);
+		}
+	})};

@@ -9,14 +9,13 @@ var defaultLayers;
 var map;
 var behavior;
 var ui;	
-var locationsContainer;
-var routeInstructionsContainer;
-var route;
 var total_time;
 var total_distance;
 var startTime;
 var endTime;
 var riskProbability;
+var count_property = 0,
+	count_personal = 0;
 var routeXYZ;
 var crimeDistribution;
 var polyline;
@@ -68,7 +67,6 @@ function onSuccessCalculate(result) {
   */
   addRouteShapeToMap(route);
   addManueversToMap(route); //This function calls function that requests from server
-  // ... etc.
 }
 
 /**
@@ -163,7 +161,6 @@ Number.prototype.toMMSS = function () {
 }
 
 /*Code below used to draw map and add markers*/
-
 function addLocationsToMap(locations){
   var group = new  H.map.Group(),
     position;
@@ -237,7 +234,6 @@ function onSuccess(result) {
   * in the functions below:
   */
   addLocationsToMap(locations);
-  // ... etc.
 }
 
 function addLocationDestination() {
@@ -250,6 +246,7 @@ function savePosition(position) {
 	longitude = position.coords.longitude;
 	drawMap();
 	addLocationDestination();
+	$("#loader-container").hide();
 }
 
 function error(err) {
@@ -310,9 +307,25 @@ function drawMap() { //Map drawer from from HERE API
 	map.setZoom(14);
 }
 
+function updateStats(){
+	$("#count-property").html(count_property);
+	$("#count-personal").html(count_personal);
+	var risk = Math.round(riskProbability * 1000000) / 1000000;
+	$("#risk-probability").html(risk);
+	if (risk > 0.03) {
+		$("#uber-pre").html("Seems real sketch...should really");
+	} else if (risk > 0.01) {
+		$("#uber-pre").html("A bit sketch, wanna...");
+	} else {
+		$("#uber-pre").html("Not too sketch, but...");
+	}
+	$("#total_time").html(Math.round(total_time / 60));
+	$("#total_distance").html(Math.round(total_distance * 100)/100);
+	DNC();
+}
+
 function callServer(){
 	var i;
-	//$("#probability").text("Low");
 	if ($("#uber").css("display") == "none") {
 		$("#uber").slideToggle();
 	}
@@ -323,13 +336,19 @@ function callServer(){
 		console.log(data);
 		crimeDistribution = data.crimes;
 		riskProbability = data.risk;
+		count_property = 0;
+		count_personal = 0;
 		for(i = 0; i < crimeDistribution.length; i++) {
 			if (crimeDistribution[i].Category == 'Property') {
+				count_property++;
 				addCircleToMap(map, crimeDistribution[i].Latitude, crimeDistribution[i].Longitude, 'yellow');
 			} else if (crimeDistribution[i].Category == 'Person') {
+				count_personal++;
 				addCircleToMap(map, crimeDistribution[i].Latitude, crimeDistribution[i].Longitude, 'red');
 			}
 		}
+		updateStats();
+		$("#loader-container").hide();
 		console.log("ic " + map.getObjects().length);
 	});
 }
@@ -374,10 +393,12 @@ $(document).ready(function() {
 	getLocation();
 	$("#destination").keyup(function(event){
 		if(event.keyCode == 13){
+			$("#loader-container").show();
 			$("#submit").click();
 		}
 	});
 	$("#submit").click(function() {
+		$("#loader-container").show();
 		userDest = destination.value;
 		geocode(platform);
 	});

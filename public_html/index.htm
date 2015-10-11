@@ -11,6 +11,18 @@
 	</style>
 </head>
 <body>
+<div id="loader-container">
+	<div id="loader">
+		<ul>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+		</ul>
+	</div>
+</div>
 <div class = "inputBar">
 	<input id = "destination" type="text" name="Destination" title ="Enter Destination"
 		   placeholder ="Enter Destination"/>
@@ -22,6 +34,11 @@
 <div id="uber" style="background: white">
 	<div class="left">
 		<div class="left-title">
+			<div>
+				<span>Walking time and distance: </span>
+				<span id="total_time" class="DNC" dir="down" most="70" format="number"></span> <span>mins</span>
+				<span id="total_distance" class="DNC" dir="down" most="4" format="number"></span> <span>miles</span>
+			</div>
 			<span>Past Crime Statistics on this Path over 4 Months:</span>
 		</div>
 		<div class="row">
@@ -37,21 +54,21 @@
 				<h4 class="label-personal">Assault, Kidnapping:</h4>
 			</div>
 			<div class="col-xs-2 col-md-6">
-				<h4 id="count-personal" class="DNC" format="number" dir="down" most="60" least="0">23</h4>
+				<h4 id="count-personal" class="DNC" format="number" dir="down" most="30" least="0">23</h4>
 			</div>
 		</div>
 		<div class="row">
 			<div class="col-xs-10 col-md-6">
-				<h4>Overall Risk Factor:</h4>
+				<h4>Overall Risk Factor (0~1):</h4>
 			</div>
 			<div class="col-xs-2 col-md-6">
-				<h4 id="probability" class="DNC" format="decimal" dir="down" most="0.1" least="0">0.003</h4>
+				<h4 id="risk-probability" class="DNC" format="decimal" dir="down" most="0.03" least="0">0.003</h4>
 			</div>
 		</div>
 	</div>
 	<div id = "call" class="right col-xs-5">
 		<div class="text">
-			<span>Seems Sketch...</span>
+			<span id="uber-pre">Seems Sketch...</span>
 			<h1	>Call an Uber?</h1>
 		</div>
 	</div>
