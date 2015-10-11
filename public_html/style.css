@@ -26,9 +26,11 @@
 }
 #left, #right {
 	position: absolute;
-	width: 48%;
+	width: 50%;
 	height: 100%;
 	text-align: center;
+	border: 1;
+	border-color: #f4f4f4;
 }
 #crimeScore {
 	text-align: center;
@@ -36,10 +38,11 @@
 }
 #call, #probability {
 	height: 100%;
+	width: 100%;
 	text-align: center;
 }
 #call {
-	cursor:pointer;
+	cursor: pointer;
 }
 #left {
 	left: 0;

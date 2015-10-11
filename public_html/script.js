@@ -318,29 +318,46 @@ function drawMap() { //Map drawer from from HERE API
 
 function callServer(){
 	var i;
-	$("#probability").text("0.5");
+	$("#probability").text("Low");
 	$("#uber").slideToggle();
 	
-	$.post("<URLHERE>", routeXYZ, function() {
-		//save stuff here		
+	$.post("http://crimerisk.azurewebsites.net/risk", routeXYZ, function(arrayBack) {
+		crimeDistribution = arrayBack;		
 	});
 	for(i = 0; i < crimeDistribution.length; i++) {
-		addCircleToMap(map, crimeDistribution[i].lat, crimeDistribution[i].lng);
+		if (crimeDistribution[i].Category == 'Property') {
+			addCircleToMap(map, crimeDistribution[i].Latitude, crimeDistribution[i].Longitude, 'yellow');
+		}
+		if (crimeDistribution[i].Category == 'Person') {
+			addCircleToMap(map, crimeDistribution[i].Latitude, crimeDistribution[i].Longitude, 'red');
+		}
 	}
 }
 
-function addCircleToMap(map, latitude, longitude){
-	map.addObject(new H.map.Circle(
-    {lat: latitude, lng: longitude},
-    80,
-    {
-      style: {
-        strokeColor: 'rgba(55, 0, 0, 0.6)', // Color of the perimeter
-        lineWidth: 2,
-        fillColor: 'rgba(60, 0, 0, 0.5)'  // Color of the circle
-      }
-    }
-  ));
+function addCircleToMap(map, latitude, longitude, color){
+	if (color == 'yellow') {
+		map.addObject(new H.map.Circle(
+		{lat: latitude, lng: longitude},
+		80,
+		{
+		  style: {
+			strokeColor: 'rgba(255, 240, 31, 0.6)', // Color of the perimeter
+			lineWidth: 1,
+			fillColor: 'rgba(255, 240, 31, 0.5)'  // Color of the circle
+		  }
+		}));
+	} else {
+		map.addObject(new H.map.Circle(
+		{lat: latitude, lng: longitude},
+		80,
+		{
+		  style: {
+			strokeColor: 'rgba(255, 30, 30, 0.6)', // Color of the perimeter
+			lineWidth: 1,
+			fillColor: 'rgba(255, 30, 30, 0.5)'  // Color of the circle
+		  }
+		}));
+	}
 }
 
 $(document).ready(function() {
