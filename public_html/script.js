@@ -16,7 +16,7 @@ var total_time;
 var total_distance;
 var startTime;
 var endTime;
-var serverData;
+var riskProbability;
 var routeXYZ = [];
 var crimeDistribution;
 var polyline;
@@ -321,10 +321,11 @@ function callServer(){
 	$("#probability").text("Low");
 	$("#uber").slideToggle();
 	
-	$.post("http://crimerisk.azurewebsites.net/risk", routeXYZ, function(arrayBack) {
-		crimeDistribution = arrayBack;		
-	});
-	for(i = 0; i < crimeDistribution.length; i++) {
+	$.post("http://crimerisk.azurewebsites.net/risk", JSON.stringify(routeXYZ), function(data) {
+		console.log(data);
+		crimeDistribution = data.crimes;
+		riskProbability = data.risk;
+		for(i = 0; i < crimeDistribution.length; i++) {
 		if (crimeDistribution[i].Category == 'Property') {
 			addCircleToMap(map, crimeDistribution[i].Latitude, crimeDistribution[i].Longitude, 'yellow');
 		}
@@ -332,31 +333,37 @@ function callServer(){
 			addCircleToMap(map, crimeDistribution[i].Latitude, crimeDistribution[i].Longitude, 'red');
 		}
 	}
+	});
 }
 
 function addCircleToMap(map, latitude, longitude, color){
 	if (color == 'yellow') {
+		if (map) {
+			
+		}
 		map.addObject(new H.map.Circle(
 		{lat: latitude, lng: longitude},
-		80,
-		{
-		  style: {
-			strokeColor: 'rgba(255, 240, 31, 0.6)', // Color of the perimeter
-			lineWidth: 1,
-			fillColor: 'rgba(255, 240, 31, 0.5)'  // Color of the circle
-		  }
-		}));
+			80,
+			{
+			  style: {
+				strokeColor: 'rgba(255, 240, 31, 0.6)', // Color of the perimeter
+				lineWidth: 1,
+				fillColor: 'rgba(255, 240, 31, 0.5)'  // Color of the circle
+			  }
+			}
+		));
 	} else {
 		map.addObject(new H.map.Circle(
 		{lat: latitude, lng: longitude},
-		80,
-		{
-		  style: {
-			strokeColor: 'rgba(255, 30, 30, 0.6)', // Color of the perimeter
-			lineWidth: 1,
-			fillColor: 'rgba(255, 30, 30, 0.5)'  // Color of the circle
-		  }
-		}));
+			80,
+			{
+			  style: {
+				strokeColor: 'rgba(255, 30, 30, 0.6)', // Color of the perimeter
+				lineWidth: 1,
+				fillColor: 'rgba(255, 30, 30, 0.5)'  // Color of the circle
+			  }
+			}
+		));
 	}
 }
 
