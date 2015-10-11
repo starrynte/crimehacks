@@ -318,11 +318,12 @@ function drawMap() { //Map drawer from from HERE API
 
 function callServer(){
 	var i;
+	$("#probability").text("0.5");
 	$("#uber").slideToggle();
+	
 	$.post("<URLHERE>", routeXYZ, function() {
-		//save stuff here	
-		drawCrimeLayer();
-	});	
+		//save stuff here		
+	});
 	for(i = 0; i < crimeDistribution.length; i++) {
 		addCircleToMap(map, crimeDistribution[i].lat, crimeDistribution[i].lng);
 	}
@@ -356,4 +357,9 @@ $(document).ready(function() {
 		console.log($("#destination"));
 		geocode(platform);
 	});
+	/*$("#switchMode").click(function() {
+		console.log("switching modes...");
+		$("#formPopup").popup("open");
+		
+	});*/
 });

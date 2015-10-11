@@ -10,14 +10,25 @@
 		<style type="text/css">
 </style>
 </head>
-<body style="background-color:8af6ff">
+<body style="background-color:AEBBD5">
 	<div class = "inputBar"> 
-		<input id = "destination" type="text" name="Destination" title ="Enter Destination" style= "color:#888; height: 35; font-size: 12pt" 
+		<input id = "destination" type="text" name="Destination" title ="Enter Destination" style= "color:#888; height: 8% ; font-size: 130%" 
 		placeholder ="Enter Destination"/>	
-		<input id = "submit" value="Submit" style = "height: 35; font-size: 12pt"></div>
+		<input id = "submit" value="Submit" style = "height: 8%; font-size: 130%">
+		<!--<input id = "switchMode" value="Switch Modes" style = "height: 8%; font-size: 130%"></div>-->
 	<div id = "input"></div>
 	<div id="map" style="width: 100%; height: 100%; background: lightblue"></div>
-	<div id="uber" style="width: 100%, height: 34%; background: white"></div>
+	
+	<div id="uber" style="background: white">
+		<div id = "left">
+			<h1 class = "crimeScore">
+				<p id = "probability" style= "font-size: 30pt"></p>
+			</h1>
+		</div>
+		<div id = "right">
+			<input id = "call" value = "Call Uber" style = "font-size: 30pt"/>
+		</div>
+	</div>
 	<div id="errorModal" class="modal fade" role="dialog">
 		<div class="modal-dialog">
 			<!-- Modal content-->
@@ -37,7 +48,23 @@
 		</div>
 	</div>
 	
+	<!--<div data-role="main" class="ui-content">
+    <a href="#myPopup" data-rel="popup" class="ui-btn ui-btn-inline ui-corner-all ui-icon-check ui-btn-icon-left">Show Popup Form</a>
+		<div data-role="popup" id="formPopup" class="ui-content" style="min-width:250px;">
+		  <form method="post" action="demoform.asp">
+			<div>
+			  <h3>Input Location:</h3>
+			  <label for="lctn" class="ui-hidden-accessible">Enter Address:</label>
+			  <input type="text" name="lctn" id="lctn" placeholder="Location">
+			  <input type="submit" name="cancel" id="cancel" value = "cancel">
+			  <input type="submit" value="Submit">
+			</div>
+		  </form>
+		</div>
+	</div>-->
+	
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<!--	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mobile/1.4.5/jquery.mobile.min.js"></script>-->
 		  <script type="text/javascript" charset="UTF-8"
 		src="https://js.api.here.com/v3/3.0/mapsjs-core.js"></script>
 	  <script type="text/javascript" charset="UTF-8"
