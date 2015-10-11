@@ -57,6 +57,7 @@ function onSuccessCalculate(result) {
   if (!result.response || !result.response.route || result.response.route.length == 0) {
 	  $("#errorMessage").html("This location is not accessible by foot from your location.");
 	  $("#errorModal").modal("toggle");
+	  $("#loader-container").hide();
 	  return;
   }
   var route = result.response.route[0];
@@ -212,6 +213,7 @@ function geocode(platform) {
 function onError(error) {
   $("#errorMessage").html('Ooops!');
   $("#errorModal").modal("toggle");
+  $("#loader-container").hide();
   return;
 }
 
@@ -225,6 +227,7 @@ function onSuccess(result) {
   if (!result.response || !result.response.view || result.response.view.length == 0) {
 	  $("#errorMessage").html("Invalid Location");
 	  $("#errorModal").modal("toggle");
+	  $("#loader-container").hide();
 	  return;
   }
   var locations = result.response.view[0].result;
@@ -254,18 +257,22 @@ function error(err) {
         case error.PERMISSION_DENIED:
             $("#errorMessage").html("User denied the request for Geolocation.");
 			$("#errorModal").modal("toggle");
+			$("#loader-container").hide();
             break;
         case error.POSITION_UNAVAILABLE:
             $("#errorMessage").html("Location information is unavailable.");
 			$("#errorModal").modal("toggle");
+			$("#loader-container").hide();
             break;
         case error.TIMEOUT:
             $("#errorMessage").html("The request to get user location timed out.");
 			$("#errorModal").modal("toggle");
+			$("#loader-container").hide();
             break;
         case error.UNKNOWN_ERROR:
             $("#errorMessage").html("An unknown error occurred.");
 			$("#errorModal").modal("toggle");
+			$("#loader-container").hide();
             break;
     }
 };
@@ -276,6 +283,7 @@ function getLocation() {
 	} else {
 		$("#errorMessage").html("Geolocation is not supported by this browser.");
 		$("#errorModal").modal("toggle");
+		$("#loader-container").hide();
 		return;
 	}
 }
@@ -385,7 +393,7 @@ function callUber() {
 	$.post("http://crimehacks.azurewebsites.net/uber", dataObj, function() {
 		console.log("success");
 	}).fail(function() {
-		console.log("jackson pls");
+		console.log("nathan pls");
 	});
 }
 
@@ -399,6 +407,7 @@ $(document).ready(function() {
 	});
 	$("#submit").click(function() {
 		$("#loader-container").show();
+		$("#destination").blur();
 		userDest = destination.value;
 		geocode(platform);
 	});
